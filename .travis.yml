@@ -6,7 +6,8 @@ jdk: oraclejdk8
 
 install: true
 
-script: mvn package
+script: 
+    - gradle test
 
 notifications:
     irc:
