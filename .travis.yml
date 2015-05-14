@@ -1,0 +1,16 @@
+sudo: false
+
+language: java
+
+jdk: oraclejdk8
+
+install: true
+
+script: mvn package
+
+notifications:
+    irc:
+        channels:
+            - "irc.esper.net#hyperfresh"
+        on_success: always
+        on_failure: always
