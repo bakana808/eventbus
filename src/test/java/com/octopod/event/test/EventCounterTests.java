@@ -3,7 +3,7 @@ package com.octopod.event.test;
 import com.octopod.event.Event;
 import com.octopod.event.EventBus;
 import com.octopod.event.EventWaiter;
-import com.octopod.event.Handler;
+import com.octopod.event.EventHandler;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -14,7 +14,7 @@ public class EventCounterTests
 
 	}
 
-	public static EventWaiter<EmptyEvent> handler = new EventWaiter<>(new Handler<EmptyEvent>()
+	public static EventWaiter<EmptyEvent> handler = new EventWaiter<>(new EventHandler<EmptyEvent>()
 	{
 		@Override
 		public void handle(EmptyEvent event)

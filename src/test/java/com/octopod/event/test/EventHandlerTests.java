@@ -7,11 +7,11 @@ public class EventHandlerTests
 {
 	public static class EmptyEvent extends Event
 	{
-
+		public void test() { }
 	}
 
 	//a handler class
-	public static Handler<EmptyEvent> handler = new Handler<EmptyEvent>()
+	public static EventHandler<EmptyEvent> handler = new EventHandler<EmptyEvent>()
 	{
 		@Override
 		public void handle(EmptyEvent event)
@@ -27,7 +27,7 @@ public class EventHandlerTests
 	};
 
 	//a handler counter class
-	public static Handler<EmptyEvent> counter = new EventWaiter<>(new Handler<EmptyEvent>()
+	public static EventHandler<EmptyEvent> counter = new EventWaiter<>(new EventHandler<EmptyEvent>()
 	{
 		@Override
 		public void handle(EmptyEvent event)
@@ -45,7 +45,7 @@ public class EventHandlerTests
 	//a handler container
 	public static class HandlerContainer
 	{
-		@EventHandler
+		@EventHandlerMethod
 		public void onEmptyEvent(EmptyEvent event)
 		{
 			System.out.println("handler method invoked");
@@ -63,5 +63,15 @@ public class EventHandlerTests
 
 		eventBus.postEvent(new EmptyEvent());
 	}
+
+	public static EventHandler<EmptyEvent> genericHandler = (EmptyEvent event) -> event.test();
+
+
+	@Test
+	public void testEventGenerics()
+	{
+		System.out.println(genericHandler.getEventType());
+	}
+
 
 }

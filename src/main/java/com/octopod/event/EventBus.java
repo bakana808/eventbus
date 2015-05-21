@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class EventBus
 {
-	private final Map<Class<? extends Event>, Set<Handler<?>>> handlerMap = new ConcurrentHashMap<>();
+	private final Map<Class<? extends Event>, Set<EventHandler<?>>> handlerMap = new ConcurrentHashMap<>();
 
 	private <E extends Event> void checkHandlers(Class<E> type)
 	{
@@ -24,10 +24,10 @@ public class EventBus
 	}
 
 	@SuppressWarnings("unchecked")
-	private <E extends Event> Set<Handler<E>> getEventHandlers(Class<E> type)
+	private <E extends Event> Set<EventHandler<E>> getEventHandlers(Class<E> type)
 	{
 		checkHandlers(type);
-		return (Set<Handler<E>>) (Set) handlerMap.get(type);
+		return (Set<EventHandler<E>>) (Set) handlerMap.get(type);
 	}
 
 	public void unregisterAll()
@@ -49,7 +49,7 @@ public class EventBus
 	 * @param handler an event handler
 	 * @param <E>     the type of event
 	 */
-	public <E extends Event> boolean registerHandler(Handler<E> handler)
+	public <E extends Event> boolean registerHandler(EventHandler<E> handler)
 	{
 		return getEventHandlers(handler.getEventType()).add(handler);
 	}
@@ -60,7 +60,7 @@ public class EventBus
 	 * @param handler an event handler
 	 * @param <E>     the type of event
 	 */
-	public <E extends Event> boolean unregisterHandler(Handler<E> handler)
+	public <E extends Event> boolean unregisterHandler(EventHandler<E> handler)
 	{
 		return getEventHandlers(handler.getEventType()).remove(handler);
 	}
@@ -73,7 +73,7 @@ public class EventBus
 	 */
 	public int registerHandlers(Object object)
 	{
-		Set<Handler<?>> handlers = findEventHandlers(object);
+		Set<EventHandler<?>> handlers = findEventHandlers(object);
 
 		AtomicInteger count = new AtomicInteger(0);
 
@@ -89,7 +89,7 @@ public class EventBus
 
 	public int unregisterHandlers(Object object)
 	{
-		Set<Handler<?>> handlers = findEventHandlers(object);
+		Set<EventHandler<?>> handlers = findEventHandlers(object);
 
 		AtomicInteger count = new AtomicInteger(0);
 
@@ -104,9 +104,9 @@ public class EventBus
 	}
 
 	@SuppressWarnings("unchecked")
-	private static Set<Handler<?>> findEventHandlers(Object object)
+	private static Set<EventHandler<?>> findEventHandlers(Object object)
 	{
-		Set<Handler<?>> handlers = new HashSet<>();
+		Set<EventHandler<?>> handlers = new HashSet<>();
 		for (Method method : object.getClass().getMethods())
 		{
 			if (isEventHandlerMethod(method))
@@ -125,7 +125,7 @@ public class EventBus
 		return method.getReturnType().equals(Void.TYPE) && //Method returns VOID
 				method.getParameterTypes().length == 1 && //Method has one argument
 				Event.class.isAssignableFrom(method.getParameterTypes()[0]) && //first argument is event
-				method.isAnnotationPresent(EventHandler.class); //Method has annotation
+				method.isAnnotationPresent(EventHandlerMethod.class); //Method has annotation
 	}
 
 	@SuppressWarnings("unchecked")
@@ -133,7 +133,7 @@ public class EventBus
 	{
 		if (handlerMap.containsKey(event.getClass()) || handlerMap.containsKey(Event.class))
 		{
-			for (Handler<E> handler : getEventHandlers((Class<E>) event.getClass()))
+			for (EventHandler<E> handler : getEventHandlers((Class<E>) event.getClass()))
 			{
 				handler.handle(event);
 			}

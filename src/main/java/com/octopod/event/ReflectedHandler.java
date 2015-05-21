@@ -6,7 +6,7 @@ import java.lang.reflect.Method;
 /**
  * @author octopod
  */
-class ReflectedHandler<E extends Event> implements Handler<E>
+class ReflectedHandler<E extends Event> implements EventHandler<E>
 {
 	final Class<E> type;
 	final Method method;
@@ -17,7 +17,7 @@ class ReflectedHandler<E extends Event> implements Handler<E>
 		this.type = type;
 		this.method = method;
 		this.instance = instance;
-		if(!method.isAnnotationPresent(EventHandler.class)) throw new IllegalArgumentException("This method does not have the EventSubscribe annotation");
+		if(!method.isAnnotationPresent(EventHandlerMethod.class)) throw new IllegalArgumentException("This method does not have the EventSubscribe annotation");
 		if(getEventType() != type) throw new IllegalArgumentException("The provided event type does not match the first argument of the provided method.");
 	}
 

@@ -10,7 +10,7 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  * @author octopod
  */
-public class EventWaiter<E extends Event> implements Handler<E>
+public class EventWaiter<E extends Event> implements EventHandler<E>
 {
 	private final Lock lock = new ReentrantLock();
 	private final Condition wait = lock.newCondition();
@@ -18,9 +18,9 @@ public class EventWaiter<E extends Event> implements Handler<E>
 	/**
 	 * The handler that is being wrapped.
 	 */
-	private final Handler<E> handler;
+	private final EventHandler<E> handler;
 
-	public EventWaiter(Handler<E> handler)
+	public EventWaiter(EventHandler<E> handler)
 	{
 		this.handler = handler;
 	}
