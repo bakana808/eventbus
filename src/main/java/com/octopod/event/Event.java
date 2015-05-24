@@ -1,7 +1,7 @@
 package com.octopod.event;
 
 /**
- * Defines an Event.
+ * A base class for all events.
  *
  * @author octopod
  */

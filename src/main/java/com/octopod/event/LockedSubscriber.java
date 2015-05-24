@@ -6,38 +6,56 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * An event handler wrapper that waits for an EventHandler to be invoked.
+ * An Subscriber wrapper that waits for a Subscriber to be invoked.
  *
  * @author octopod
  */
-public class EventWaiter<E extends Event> implements EventHandler<E>
+public class LockedSubscriber<E extends Event> implements Subscriber<E>
 {
 	private final Lock lock = new ReentrantLock();
 	private final Condition wait = lock.newCondition();
 
 	/**
-	 * The handler that is being wrapped.
+	 * The subscriber that is being wrapped.
 	 */
-	private final EventHandler<E> handler;
+	private final Subscriber<E> subscriber;
 
-	public EventWaiter(EventHandler<E> handler)
+	private final Class<E> type;
+
+	/**
+	 * Generic LockedSubscriber constructor.
+	 * <p>
+	 * 		Tries to get the type of <code>subscriber</code> using
+	 * </p>
+	 * @param subscriber
+	 */
+	public LockedSubscriber(Subscriber<E> subscriber)
 	{
-		this.handler = handler;
+		this.subscriber = subscriber;
+		this.type = SubscriberTypeResolver.bySubscriber(subscriber);
 	}
 
+	public LockedSubscriber(Class<E> type, Subscriber<E> subscriber)
+	{
+		this.subscriber = subscriber;
+		this.type = type;
+	}
+
+	@Override
 	public void handle(E event)
 	{
 		lock.lock();
 
-		handler.handle(event);
+		subscriber.handle(event);
 		wait.signalAll();
 
 		lock.unlock();
 	}
 
-	public Class<E> getEventType()
+	@Override
+	public Class<E> getType()
 	{
-		return handler.getEventType();
+		return type;
 	}
 
 	/**
@@ -45,7 +63,7 @@ public class EventWaiter<E extends Event> implements EventHandler<E>
 	 *
 	 * @return the current time in MS
 	 */
-	private static final long time() { return System.currentTimeMillis(); }
+	private static long time() { return System.currentTimeMillis(); }
 
 	/**
 	 * A class containing the results of a waitFor().
@@ -88,7 +106,7 @@ public class EventWaiter<E extends Event> implements EventHandler<E>
 	}
 
 	/**
-	 * Waits for the handler to be invoked a variable amount of times.
+	 * Waits for the subscriber to be invoked a variable amount of times.
 	 * Use <code>timeout</code> (in ms) to timeout afterwards and return anyway.
 	 *
 	 * @param timeout the timeout, in ms
