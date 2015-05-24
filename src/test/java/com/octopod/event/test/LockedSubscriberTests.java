@@ -1,6 +1,7 @@
 package com.octopod.event.test;
 
 import com.octopod.event.*;
+import com.octopod.event.LockedSubscriber.InvocationResult;
 import com.octopod.event.test.Events.EventA;
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,9 +34,9 @@ public class LockedSubscriberTests
 		t.interrupt();
 	}
 
-	public LockedSubscriber.ConditionResult testEventCounterFor(final int invocations) throws InterruptedException
+	public InvocationResult testEventCounterFor(final int invocations) throws InterruptedException
 	{
-		LockedSubscriber.ConditionResult result = subscriber.waitFor(invocations, 1000);
+		InvocationResult result = subscriber.waitFor(invocations, 1000);
 		if(result.wasTimedOut())
 		{
 			System.out.println(result.getDesiredInvocations() + " invocations: TIMED OUT (" + result.getTotalInvocations() + ", " + result.getElapsedTime() + " ms)");
