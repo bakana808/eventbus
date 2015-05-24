@@ -145,6 +145,50 @@ public class LockedSubscriber<E extends Event> implements Subscriber<E>
 	}
 
 	/**
+	 * A shortcut for <code>waitFor(1, long)</code>, in which it will wait for this subscriber to
+	 * be invoked once.
+	 *
+	 * @see #waitFor(int, long)
+	 *
+	 * @param timeout	the amount of time (in ms) to wait until this method times out
+	 *
+	 * @return a {@link InvocationResult}
+	 *
+	 * @throws InterruptedException
+	 */
+	public final InvocationResult waitFor(long timeout) throws InterruptedException
+	{
+		return waitFor(1, timeout);
+	}
+
+	/**
+	 * An alias for <code>waitFor(int, long)</code>, in which it will swallow the
+	 * <code>InterruptedException</code> potentially thrown by it. If this happens,
+	 * this method will return null.
+	 *
+	 * @param invocations	the number of invocations to wait for
+	 * @param timeout		the amount of time (in ms) to wait until this method times out
+	 *
+	 * @return a {@link InvocationResult}
+	 */
+	public final InvocationResult waitForQuietly(int invocations, long timeout)
+	{
+		try
+		{
+			return waitFor(invocations, timeout);
+		}
+		catch(InterruptedException e)
+		{
+			return null;
+		}
+	}
+
+	public final InvocationResult waitForQuietly(long timeout)
+	{
+		return waitForQuietly(1, timeout);
+	}
+
+	/**
 	 * Waits for a condition to be true.
 	 *
 	 * @param condition
@@ -169,26 +213,16 @@ public class LockedSubscriber<E extends Event> implements Subscriber<E>
 		return new ConditionResult(time() - startTime, false);
 	}
 
-	public final ConditionResult waitFor(long timeout) throws InterruptedException
-	{
-		return waitFor(1, timeout);
-	}
-
-	public final ConditionResult waitForQuietly(int invocations, long timeout)
+	public final ConditionResult waitForQuietly(boolean condition, long timeout)
 	{
 		try
 		{
-			return waitFor(invocations, timeout);
+			return waitFor(condition, timeout);
 		}
 		catch(InterruptedException e)
 		{
 			return null;
 		}
-	}
-
-	public final ConditionResult waitForQuietly(long timeout)
-	{
-		return waitForQuietly(1, timeout);
 	}
 
 	public final Thread waitForAsync(final int invocations, final long timeout)
