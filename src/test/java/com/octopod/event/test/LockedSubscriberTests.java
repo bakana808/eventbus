@@ -33,9 +33,9 @@ public class LockedSubscriberTests
 		t.interrupt();
 	}
 
-	public LockedSubscriber.Result testEventCounterFor(final int invocations) throws InterruptedException
+	public LockedSubscriber.ConditionResult testEventCounterFor(final int invocations) throws InterruptedException
 	{
-		LockedSubscriber.Result result = subscriber.waitFor(invocations, 1000);
+		LockedSubscriber.ConditionResult result = subscriber.waitFor(invocations, 1000);
 		if(result.wasTimedOut())
 		{
 			System.out.println(result.getDesiredInvocations() + " invocations: TIMED OUT (" + result.getTotalInvocations() + ", " + result.getElapsedTime() + " ms)");

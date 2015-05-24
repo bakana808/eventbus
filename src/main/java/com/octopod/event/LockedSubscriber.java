@@ -69,24 +69,38 @@ public class LockedSubscriber<E extends Event> implements Subscriber<E>
 	 * A class containing the results of a waitFor().
 	 * Includes time elapsed, total/desired invocations, and if the request timed out.
 	 */
-	public static class Result
+	public static class ConditionResult
 	{
 		long elapsedTime;
-		int invocations;
-		int desiredInvocations;
 		boolean timedOut;
 
-		protected Result(long elapsedTime, int invocations, int desiredInvocations, boolean timedOut)
+		protected ConditionResult(long elapsedTime, boolean timedOut)
 		{
 			this.elapsedTime = elapsedTime;
-			this.invocations = invocations;
-			this.desiredInvocations = desiredInvocations;
 			this.timedOut = timedOut;
 		}
 
 		public long getElapsedTime()
 		{
 			return elapsedTime;
+		}
+
+		public boolean wasTimedOut()
+		{
+			return timedOut;
+		}
+	}
+
+	public static class InvocationResult extends ConditionResult
+	{
+		int invocations;
+		int desiredInvocations;
+
+		protected InvocationResult(long elapsedTime, boolean timedOut, int invocations, int desiredInvocations)
+		{
+			super(elapsedTime, timedOut);
+			this.invocations = invocations;
+			this.desiredInvocations = desiredInvocations;
 		}
 
 		public int getTotalInvocations()
@@ -98,11 +112,6 @@ public class LockedSubscriber<E extends Event> implements Subscriber<E>
 		{
 			return desiredInvocations;
 		}
-
-		public boolean wasTimedOut()
-		{
-			return timedOut;
-		}
 	}
 
 	/**
@@ -112,7 +121,7 @@ public class LockedSubscriber<E extends Event> implements Subscriber<E>
 	 * @param timeout the timeout, in ms
 	 * @return whether the listener successfully did its executions within the timeout
 	 */
-	public final Result waitFor(int invocations, long timeout) throws InterruptedException
+	public final InvocationResult waitFor(int invocations, long timeout) throws InterruptedException
 	{
 		long startTime = time();
 		int invokeCount = 0;
@@ -127,20 +136,45 @@ public class LockedSubscriber<E extends Event> implements Subscriber<E>
 			}
 			else // timed out
 			{
-				return new Result(time() - startTime, invokeCount, invocations, true);
+				return new InvocationResult(time() - startTime, true, invokeCount, invocations);
 			}
 
 			lock.unlock();
 		}
-		return new Result(time() - startTime, invokeCount, invocations, false);
+		return new InvocationResult(time() - startTime, false, invokeCount, invocations);
 	}
 
-	public final Result waitFor(long timeout) throws InterruptedException
+	/**
+	 * Waits for a condition to be true.
+	 *
+	 * @param condition
+	 * @param timeout
+	 * @return
+	 * @throws InterruptedException
+	 */
+	public final ConditionResult waitFor(boolean condition, long timeout) throws InterruptedException
+	{
+		long startTime = time();
+
+		while(!condition)
+		{
+			lock.lock();
+
+			if(!wait.await(timeout, TimeUnit.MILLISECONDS)) // timed out
+			{
+				return new ConditionResult(time() - startTime, true);
+			}
+		}
+
+		return new ConditionResult(time() - startTime, false);
+	}
+
+	public final ConditionResult waitFor(long timeout) throws InterruptedException
 	{
 		return waitFor(1, timeout);
 	}
 
-	public final Result waitForQuietly(int invocations, long timeout)
+	public final ConditionResult waitForQuietly(int invocations, long timeout)
 	{
 		try
 		{
@@ -152,7 +186,7 @@ public class LockedSubscriber<E extends Event> implements Subscriber<E>
 		}
 	}
 
-	public final Result waitForQuietly(long timeout)
+	public final ConditionResult waitForQuietly(long timeout)
 	{
 		return waitForQuietly(1, timeout);
 	}
